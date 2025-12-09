@@ -10,7 +10,8 @@ import {
 const router = Router()
 
 router.route("/createBoard/:userId").post(createBoard)
-router.route("/getBoard/:boardId").post(getBoard)
+router.route("/getBoard/:boardId").get(getBoard)
+router.route("/getAllBoard/:userId").get(getAllBoard)
 
 
 export default router
