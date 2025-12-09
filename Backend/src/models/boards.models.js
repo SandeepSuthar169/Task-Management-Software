@@ -1,11 +1,3 @@
-//projectId:
-// board_name ok
-// userId ok
-// prioripy ok 
-// start date
-// end date
-//tags ok
-
 import mongoose, { Schema} from "mongoose";
 import {
     BoardTages, 
@@ -51,4 +43,4 @@ const boardSchema = new Schema(
 
 
 
-export const BoardName = mongoose.model("BoardName", boardSchema)
+export const Board = mongoose.model("Board", boardSchema)

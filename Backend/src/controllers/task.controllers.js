@@ -13,9 +13,7 @@ import { AvailableTaskStatuses, AvailableUserRoles } from "../utils/constants.js
 const createTask = asyncHandler(async(req, res) =>{
     //1. find project
     const { title, description, status, assignedTo } = req.body
-    console.log(title);
-    console.log(description);
-    console.log(status);
+
     // console.log(assignedTo );
     if(!title || !description || !status)  throw new ApiError(404, "user info not found!")
     
@@ -336,7 +334,7 @@ const getSubTask = asyncHandler(async(req, res) => {
     const subtask = SubTask.aggregate([
       {
         $match: {
-            task: new mongoose.Types.ObjectId(taskId)  // FIX: Must be an object with field name
+            task: new mongoose.Types.ObjectId(taskId) 
         }
     },
     {
