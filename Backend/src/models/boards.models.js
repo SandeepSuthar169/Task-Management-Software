@@ -12,7 +12,7 @@ const boardSchema = new Schema(
             type: String,
             require: true
         },
-        user: {
+        assignBy: {
             type: Schema.Types.ObjectId,
             ref: "User",
             required: true

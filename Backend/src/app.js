@@ -29,6 +29,7 @@ import projectRoute from "./routes/project.routes.js"
 import noteRoute from "./routes/note.routes.js"
 import taskRoute from "./routes/task.routes.js"
 import subTaskRoute from "./routes/task.routes.js"
+import boardRoute from "./routes/board.routes.js"
 
 app.use("/api/v1/auth", authRoute)
 app.use("/api/v1/healthcheck", healthCheckRouter)
@@ -36,6 +37,7 @@ app.use("/api/v1/project", projectRoute)
 app.use("/api/v1/note", noteRoute)
 app.use("/api/v1/task", taskRoute)
 app.use("/api/v1/subTask", subTaskRoute)
+app.use("/api/v1/board", boardRoute)
 
 
 export default app;

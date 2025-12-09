@@ -11,20 +11,37 @@ const createBoard = asyncHandler(async(req, res) => {
     if(!boardName || !tags || !prioripy || !startDate || !endDate) throw new ApiError(404, "Board info is requreid")
     
     const { userId } = req.params
-    if(userId) throw new ApiError(404, "userid is required")
+    if(!userId) throw new ApiError(404, "userid is required")
 
-    const user  = await user.findById(userId)
-    if(user) throw new ApiError(404, "user is required")
-    })
-
+    const user  = await User.findById(userId)
+    // console.log(user);
+    // console.log(userId);
+    
+    if(!user) throw new ApiError(404, "user is required")
+        
     const board = await Board.create({
         boardName,
         tags,
         prioripy,
         startDate,
         endDate,
-        user: User._id
+        assignBy: user._id
     })
+
+    if(!board) throw new ApiError(404, "failed to create board")
+
+    return res.status(200).json(
+        new ApiResponse(
+            200, 
+            board,
+            "board created successfully"
+        )
+    )
+
+
+
+    })
+
 
 const getBoard = asyncHandler(async(req, res) => {
 
@@ -48,3 +65,12 @@ const deleteBoard  = asyncHandler(async(req, res) => {
 
 })
 
+
+export {
+    createBoard,
+    getBoard,
+    getAllBoard,
+    getBoardById,
+    updateBoard,
+    deleteBoard
+}
