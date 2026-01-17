@@ -1,3 +1,4 @@
+import redis from '../utils/redis.js'
 import mongoose from "mongoose"
 import { Task }  from "../models/task.models.js"
 import { User } from "../models/user.models.js"
@@ -7,8 +8,6 @@ import { ApiError } from "../utils/api-error.js"
 import { ApiResponse } from "../utils/api-response.js"
 import { asyncHandler } from "../utils/async-handler.js"
 import { AvailableTaskStatuses, AvailableUserRoles } from "../utils/constants.js"
-
-
 
 const createTask = asyncHandler(async(req, res) =>{
     //1. find project
@@ -73,7 +72,16 @@ const createTask = asyncHandler(async(req, res) =>{
 const getAllTasks = asyncHandler(async(req, res) =>{
     const { projectId } = req.params
     const project = await Project.findById(projectId)
-
+    
+    const projectTaskIdInCach = await redis.get(`rask:${projectId}`)
+    
+    if(projectTaskIdInCach) {
+        return res.status(200).json(new ApiResponse(
+            200,
+            JSON.parse(projectTaskIdInCach),
+            "project task id cached successfully"
+        ))
+    }
     if(!project)  throw new ApiError(401, "project not found")
 
     const task = await Task.aggregate([
@@ -115,6 +123,14 @@ const getAllTasks = asyncHandler(async(req, res) =>{
     ])
 
     if(!task || task.length === 0) throw new ApiError(404, "Tasks not found")
+      
+
+    await redis.set(
+      `book:${projectId}`,
+      JSON.stringify(task),
+      "EX",
+      3600
+    )
 
     return res.status(200).json(
         new ApiResponse(200,
@@ -126,9 +142,19 @@ const getAllTasks = asyncHandler(async(req, res) =>{
 
 
 const getTasksById = asyncHandler(async(req, res) =>{
-    //1. find taskId by req.params
+
     const { taskId } = req.params
-    //2. aggregate pipeline task
+
+    const tskIdInCach = await redis.get(`task:${taskId}`)
+    
+    if(tskIdInCach) {
+      return res.status(200).json(new ApiResponse(
+          200,
+          JSON.parse(tskIdInCach),
+          "user id cached successfully"
+      ))
+    }
+
     const task = await Task.aggregate([
          {
               $match: {
@@ -198,7 +224,13 @@ const getTasksById = asyncHandler(async(req, res) =>{
 
         //3. validatin of task 
         if(!task)  throw new ApiError(404, "task not found!")
-
+        
+          await redis.set(
+            `book:${taskId}`,
+            JSON.stringify(task),
+            "EX",
+            3600
+        )  
     //4. return successfully 
         return res.status(200).json(
             new ApiResponse(
@@ -256,7 +288,13 @@ const updateTask = asyncHandler(async(req, res) =>{
     const updateTask = await Task.findById(task._id)
         .populate("assignedTo", "username fullName")
         .populate("assignedBy",  "fullName username")
-
+        
+    await redis.set(
+      `book:${boardId}`,
+      JSON.stringify(board),
+      "EX",
+      3600
+    )
 
     return res.status(200).json(new ApiResponse(
       200,
@@ -279,6 +317,7 @@ const deleteTask = asyncHandler(async(req, res) =>{
     //4. validate delete task
     if(!deleTask) throw new ApiError(401, "delete task not success")
     //5. return success
+    await redis.del(`task:${taskId}`)
 
     return res.status(200).json(new ApiResponse(
       200, 
@@ -301,11 +340,11 @@ const createSubTask = asyncHandler(async(req, res) =>{
     if(!user) throw new ApiError(401, "user  is required")
       
     const { taskId } = req.params
-    if(!taskId) throw new ApiError(404, "title is required")
+    if(!taskId) throw new ApiError(404, "task id is required")
     //2. find task by taskId
 
     const task = await Task.findById(taskId)
-    if(!task)  throw new ApiError(404, "title is required")
+    if(!task)  throw new ApiError(404, "task is required")
 
     //3. crate subTask
 
@@ -331,6 +370,17 @@ const getSubTask = asyncHandler(async(req, res) => {
 
     if(!taskId) throw new ApiError(401, "taskId not found")
     //2. subtask aggregation pipeline
+  
+    const taskIdInCach = await redis.get(`task:${taskId}`)
+    
+    if(taskIdInCach) {
+        return res.status(200).json(new ApiResponse(
+            200,
+            JSON.parse(taskIdInCach),
+            "task id cached successfully"
+        ))
+    }
+      
     const subtask = SubTask.aggregate([
       {
         $match: {
@@ -373,6 +423,13 @@ const getSubTask = asyncHandler(async(req, res) => {
     
     //3. validate
     if(!subtask) throw new ApiError(401, "subTask not found")
+    
+    await redis.set(
+      `book:${taskId}`,
+      JSON.stringify(subtask),
+      "EX",
+      3600
+    )
 
     //4. return
     return res.status(200).json(
@@ -404,12 +461,19 @@ const updateSubTask = asyncHandler(async(req, res) =>{
 
     await subTask.save({ validateBeforeSave: true })
     
-    const updateSubTask = await SubTask.findById(subTaskId)
+    const updateSubTask = await SubTask.findByIdAndUpdate(subTaskId)
                 .populate("createdBy", "_id username fullname")
                 .populate("task", "_id titke")
 
 
     if(!updateSubTask) throw new ApiError(401, "updateSubTask not found")
+      
+    await redis.set(
+        `book:${subTaskId}`,
+        JSON.stringify(updateSubTask),
+        "EX",
+        3600
+      )
 
     return res.status(200).json(new ApiResponse(
       200,
@@ -430,12 +494,14 @@ const deleteSubTask = asyncHandler(async(req, res) =>{
   const delSubTask = await SubTask.findByIdAndDelete(subTaskId)
 
   if(!delSubTask) throw new ApiError(401, "subTaskId not found")
+  
+  await redis.del(`subTask:${subTaskId}`)
 
-    return res.status(200).json(new ApiResponse(
-      200,
-      delSubTask,
-      "subTask delete successfully"
-    ))
+  return res.status(200).json(new ApiResponse(
+    200,
+    delSubTask,
+    "subTask delete successfully"
+  ))
 
 
 })
