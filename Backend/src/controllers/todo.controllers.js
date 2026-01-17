@@ -10,6 +10,7 @@ import {
     AvailableTodoPriority
 } from "../utils/constants.js"
 import { Todo } from "../models/Todo.models.js";
+import redis from "../utils/redis.js";
 
 const createTodo = asyncHandler(async (req, res) => {
     const {
@@ -62,12 +63,27 @@ const getTodo = asyncHandler(async (req, res) => {
         const { todoId } = req.params
         if(!todoId) throw new ApiError(402, "todo Id is required")
       
-    
         const todo = await Todo.findById(todoId)
-    
-        
+                
         if(!todo) throw new ApiError(402, "todo is required")
-    
+        
+        const todoIdInCach = await redis.get(`todo:${todoId}`)
+        
+        if(todoIdInCach) {
+            return res.status(200).json(new ApiResponse(
+                200,
+                JSON.parse(todoIdInCach),
+                "todo id cached successfully"
+            ))
+        }
+
+        await redis.set(
+            `book:${todoId}`,
+            JSON.stringify(todo),
+            "EX",
+            3600
+        )
+
         return res.status(200).json(
             new ApiResponse(
                 200,
@@ -128,6 +144,23 @@ const getAllTodo = asyncHandler(async (req, res) => {
         }
     ])
     if(!todo || todo.length == 0 ) throw new ApiError(404, "todo is required")
+    
+    const todoUpdateIdInCach = await redis.get(`user:${userId}`)
+        
+    if(todoUpdateIdInCach) {
+        return res.status(200).json(new ApiResponse(
+            200,
+            JSON.parse(todoUpdateIdInCach),
+            "todo Update id cached successfully"
+        ))
+    }
+
+    await redis.set(
+        `book:${userId}`,
+        JSON.stringify(todo),
+        "EX",
+        3600
+    )
 
     return res.status(200).json(
         new ApiResponse(200,
@@ -195,7 +228,12 @@ const updateTodo = asyncHandler(async (req, res) => {
             }
         )
         if(!todo) throw new ApiError(402, "todo is required")
-    
+        await redis.set(
+            `todo:${todoId}`,
+            JSON.stringify(todo),
+            "EX",
+            3600
+          )
         return res.status(200).json(new ApiResponse(
             200, 
             todo, 
@@ -211,6 +249,8 @@ const deleteTodo = asyncHandler(async (req, res) => {
 
     const deleTodo = await Todo.findByIdAndDelete(todoId)
     if(!deleTodo) throw new ApiError(402, "deleTodo is required")
+    
+    await redis.del(`todo:${todoId}`)
 
     return res.status(200).json(new ApiResponse(
         200, 
