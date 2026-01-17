@@ -53,8 +53,10 @@ const getBoard = asyncHandler(async(req, res) => {
     if(!boardId) throw new ApiError(402, "board Id is required")
   
     const boardIdInCach = await redis.get(`board:${boardId}`)
+    //// console.log("boardIdInCach", boardIdInCach);
 
     const board = await Board.findById(boardId)
+    
 
     if(boardIdInCach) {
         return res.status(200).json(new ApiResponse(
@@ -92,6 +94,8 @@ const getAllBoard = asyncHandler(async(req, res) => {
     if(!user) throw new ApiError(404, "user is required")
 
     const userIdInCach = await redis.get(`board:${userId}`)
+    // console.log(userIdInCach);
+    
     
     if(userIdInCach) {
         return res.status(200).json(new ApiResponse(
@@ -216,6 +220,13 @@ const updateBoard  = asyncHandler(async(req, res) => {
     )
     if(!board) throw new ApiError(402, "boad is required")
 
+        await redis.set(
+            `book:${boardId}`,
+            JSON.stringify(board),
+            "EX",
+            3600
+          )
+
     return res.status(200).json(new ApiResponse(
         200, 
         board, 
@@ -233,6 +244,8 @@ const deleteBoard  = asyncHandler(async(req, res) => {
 
     const deleBoard = await Board.findByIdAndDelete(boardId)
     if(!deleBoard) throw new ApiError(402, "deleBoard is required")
+    
+    await redis.del(`board:${boardId}`)
 
     return res.status(200).json(new ApiResponse(
         200, 
