@@ -6,7 +6,7 @@ import { ApiResponse } from "../utils/api-response.js"
 import { ProjectNote } from "../models/note.models.js"
 import { asyncHandler } from "../utils/async-handler.js"
 import { compare } from "bcryptjs"
- 
+import redis from "../utils/redis.js"
 
 const createNote = asyncHandler(async(req, res) => {
     const { projectId } = req.params 
@@ -42,13 +42,25 @@ const createNote = asyncHandler(async(req, res) => {
             "Note created successfully"
     ))
 });
+
+
+
 const getNotes = asyncHandler(async(req, res) => {
     const { projectId } = req.params
 
     const project = await Project.findById(projectId)    
+    const projectIdInCach = await redis.get(`project:${projectId}`)
 
     if(!project){
         throw new ApiError(404, "project not found")
+    }
+
+    if(projectIdInCach) {
+        return res.status(200).json(new ApiResponse(
+        200,
+        JSON.parse(projectIdInCach),
+        "porject id cached successfully"
+        ))
     }
 
     const note = await ProjectNote.find({
@@ -60,6 +72,13 @@ const getNotes = asyncHandler(async(req, res) => {
         throw new ApiError(404, "project note not found")
     }
 
+
+    await redis.set(
+        `book:${projectId}`,
+        JSON.stringify(note),
+        "EX",
+        3600
+    )
 
     return res
         .status(200)
@@ -76,9 +95,26 @@ const getNotesById = asyncHandler(async(req, res) => {
 
     const note = await ProjectNote.findById(noteId).populate("createdBy", "username fullname avatar")
 
+    const noteInCach = await redis.get(`note:${noteId}`)
+
+    if(noteInCach){
+        return res.status(200).json(new ApiResponse(
+            200,
+            JSON.parse(noteInCach),
+            "note cached successfully"
+        ))
+    }
+
     if(!note){
         throw new ApiError(404, "note not found")
     }
+
+    await redis.set(
+        `note:${noteId}`,
+        JSON.stringify(note),
+        "EX",
+        3600
+    )
 
     return res.status(200).json(new ApiResponse(
         200, 
@@ -115,6 +151,14 @@ const updateNote = asyncHandler(async(req, res) => {
         }
     ).populate("createdBy", "username fullname avatar")
 
+    await redis.set(
+        `note:${noteId}`,
+        JSON.stringify(note),
+        "EX",
+        3600
+    )
+
+
     return res.status(200).json(new ApiResponse(
         200, 
         note, 
@@ -132,6 +176,8 @@ const deleteNote = asyncHandler(async(req, res) => {
     if(!delNote){
         throw new ApiError(404, "note delete not found")
     }
+
+    await redis.del(`note:${noteId}`)
 
     return res.status(200).json(
         new ApiResponse(

@@ -5,9 +5,8 @@ import { ProjectMember } from "../models/projectmember.models.js"
 import { User } from "../models/user.models.js"
 import { Project } from "../models/project.models.js"
 import { AvailableUserRoles, UserRolesEnum } from "../utils/constants.js";
-
 import mongoose, { Mongoose } from "mongoose";
-
+import redis from "../utils/redis.js";
 
 
 
@@ -77,6 +76,25 @@ const getProjectById = asyncHandler(async (req, res) => {
     const proiect = await Project.findById(projectId)
 
     if(!proiect)  throw new ApiError(401, "project not found")
+    const projectIdInCach = await redis.get(`project:${projectId}`)
+    // console.log(userIdInCach);
+    
+    
+    if(projectIdInCach) {
+        return res.status(200).json(new ApiResponse(
+            200,
+            JSON.parse(projectIdInCach),
+            "project id cached successfully"
+        ))
+    }
+
+    await redis.set(
+        `book:${projectId}`,
+        JSON.stringify(proiect),
+        "EX",
+        3600
+    )   
+
 
     return res.status(200).json(
         new ApiResponse(
@@ -93,75 +111,89 @@ const getProjectById = asyncHandler(async (req, res) => {
 
 
 const getProjects = asyncHandler(async (req, res) => {
+    const userCach = `user:${req.user._id}:projects`;
 
-    console.log("req.user:", req.user);
-    console.log("req.user._id:", req.user?._id);
-        const project = await ProjectMember.aggregate([
-            {
-                $match: {
-                    user: new mongoose.Types.ObjectId(req.user._id)
-                }
-            },
-            {
-                $lookup: {
-                    from: "projects",
-                    localField: "project",
-                    foreignField: "_id",
-                    as: "project",
-                    pipeline: [
-                        { 
-                            $lookup: {
-                                from: "projectmembers",
-                                localField: "_id",
-                                foreignField: "project",
-                                as: "projectmembers"
-                            }
-                        },
-                        {
-                            $addFields: {
-                                members: {
-                                    $size: "$projectmembers"
-                                }
-                            }
-                        }
-                    ]
-                }
-            },
-            {
-                $unwind: "$project"
-            },
-            {
-                $project: {
-                    project: {
-                        _id: 1,
-                        name: 1,
-                        description: 1,
-                        members: 1,
-                        createdAt: 1,
-                        createdBy: 1,
-                    },
-                    role: 1,
-                    _id: 0
-                }
-            }
+    const cachedProjects = await redisClient.get(userCach);
 
-        ]);
-        console.log(project);
-
-        if(!project) throw new ApiError(404, "Project is required!")
-        
-
+    if (cachedProjects) {
         return res.status(200).json(
             new ApiResponse(
                 200,
-                {
-                    project
+                { 
+                    project: JSON.parse(cachedProjects) 
                 },
-                "project fetched successfully"
+                "project fetched successfully (from cache)"
             )
-        )
-});
+        );
+    }
 
+    const project = await ProjectMember.aggregate([
+        {
+            $match: {
+                user: new mongoose.Types.ObjectId(req.user._id)
+            }
+        },
+        {
+            $lookup: {
+                from: "projects",
+                localField: "project",
+                foreignField: "_id",
+                as: "project",
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "projectmembers",
+                            localField: "_id",
+                            foreignField: "project",
+                            as: "projectmembers"
+                        }
+                    },
+                    {
+                        $addFields: {
+                            members: { $size: "$projectmembers" }
+                        }
+                    }
+                ]
+            }
+        },
+        { $unwind: "$project" },
+        {
+            $project: {
+                project: {
+                    _id: 1,
+                    name: 1,
+                    description: 1,
+                    members: 1,
+                    createdAt: 1,
+                    createdBy: 1
+                },
+                role: 1,
+                _id: 0
+            }
+        }
+    ]);
+
+    if (!project || project.length === 0) {
+        throw new ApiError(404, "Project is required!");
+    }
+
+    // 3️⃣ Store result in Redis (TTL = 5 minutes)
+    await redisClient.setEx(
+        userCach,
+        3500,
+        JSON.stringify(project)
+    );
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            { 
+                project 
+            },
+            "project fetched successfully"
+        )
+    );
+});
 
 
 const updateProject = asyncHandler(async (req, res) => {
@@ -193,40 +225,63 @@ const updateProject = asyncHandler(async (req, res) => {
     )
 
     if(!project)  throw new ApiError(401, "Project not found")
+    
+    await redis.set(
+        `book:${boardId}`,
+        JSON.stringify(board),
+        "EX",
+        3600
+    )
 
-    return res.status(200).json(new ApiResponse(200, project, "project update successfully"))
+    return res.status(200).json(
+        new ApiResponse(
+            200, 
+            project, 
+            "project update successfully"
+        )
+    )
 
 });
 
 
 const deleteProject = asyncHandler(async (req, res) => {
-    const { projectId } = req.params
+    const { projectId } = req.params;
 
+    if (!projectId) {
+        throw new ApiError(400, "Project Id is required");
+    }
 
-    if(!projectId)  throw new ApiError(404, "Project Id is required")
-
-    if(!mongoose.Types.ObjectId.isValid(projectId)) {
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
         throw new ApiError(400, "Invalid Project ID format");
     }
 
     const project = await Project.findById(projectId);
-    console.log("Found in Project collection:", project);
 
- 
+    if (!project) {
+        throw new ApiError(404, "Project not found");
+    }
 
-    const delProject = await Project.findOneAndDelete({ _id: projectId })
-    console.log(projectId);  
+    const delProject = await Project.findByIdAndDelete(projectId);
 
-    console.log(delProject);
-    
+    if (!delProject) {
+        throw new ApiError(404, "Project delete failed");
+    }
 
-    if(!delProject)  throw new ApiError(404, "project delete not found")
+    await redis.del(`user:${project.createdBy}:projects`);
 
-    return res.status(200,
-        new ApiResponse(200, {deleteProject}, "project delete successfully")
-    )
+    await redis.del(`project:${projectId}`);
 
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            { 
+                project: delProject 
+            },
+            "Project deleted successfully"
+        )
+    );
 });
+
 
 
 const addMemberToProject = asyncHandler(async (req, res) => {
@@ -285,7 +340,17 @@ const addMemberToProject = asyncHandler(async (req, res) => {
 const getProjectMembers = asyncHandler(async (req, res) => {
     const { projectMemberId } =  req.params
     if(!projectMemberId)  throw new ApiError(404, "projectMamabersId Id not found")
-
+        
+    const projectMemberIdInCach = await redis.get(`projectMember:${projectMemberId}`)
+    
+    if(projectMemberIdInCach) {
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                JSON.parse(projectMemberIdInCach),
+                "board id cached successfully"
+        ))
+    }
     const projectMembers = await ProjectMember.findById(projectMemberId).populate({
         path: "user",
         select: "username fullName avatar"
@@ -293,7 +358,14 @@ const getProjectMembers = asyncHandler(async (req, res) => {
 
     if(!projectMembers){
         throw new ApiError(404, "Project member is required")
-    }
+    }    
+    
+    await redis.set(
+        `book:${projectMemberId}`,
+        JSON.stringify(projectMembers),
+        "EX",
+        3600
+    )
 
     return res.status(200).json(
         new ApiResponse(
@@ -336,6 +408,14 @@ const updateProjectMembers = asyncHandler(async (req, res) => {
     if(!updateProjectMember){
         throw new ApiError(404, "user is required")
     }
+
+    await redis.set(
+        `book:${projectId}`,
+        JSON.stringify(updateProjectMember),
+        "EX",
+        3600
+      )
+
 
     return res.status(200).json(
         new ApiResponse(
@@ -399,6 +479,8 @@ const deleteMember = asyncHandler(async (req, res) => {
     if(!delProjectMember){
         throw new ApiError(404, "delete Project member is required")
     }
+
+    await redis.del(`projectMember:${projectMemberId}`)
 
     return res.status(201).json(
         new ApiResponse(201,
