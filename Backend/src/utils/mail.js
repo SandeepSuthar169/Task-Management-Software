@@ -1,85 +1,43 @@
-import { body } from "express-validator";
-import Mailgen from "mailgen"
-import nodemailer from "nodemailer"
+// email sending using nodemailer
+import nodemailer from "nodemailer";
 
-
-const sendMail = async (options) => {
-    const mailGenerator = new Mailgen({
-        theme: 'default',
-        product: {
-           
-            name: 'Task Manager',
-            link: 'https://mailgen.js/'
-           
-        }
-    })
-
-    let emailText = mailGenerator.generatePlaintext(options.mailGenContent);
-    let emailHTML = mailGenerator.generate(options.mailGenContent);
-
+const sendVerificationEmail = async (email, token) => {
+  try {
+    // create email transporter
     const transporter = nodemailer.createTransport({
-        host: process.env.MAILTRAP_SMTP_HOST,
-        port: process.env.MAILTRAP_SMTP_PORT,
-        secure: false, // true for 465, false for other ports
-        auth: {
-          user: process.env.MAILTRAP_SMTP_USER, 
-          pass: process.env.MAILTRAP_SMTP_PASSWORD,
-        },
-      });
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-    const mail = {
-        from: 'mail.taskmanager@exa.com',
-        to: options.email,
-        subject: options.subject,
-        text: emailText,             // plain‑text body
-        html: emailHTML,             // HTML body
-    }
+    // verification URL
+    const verificationUrl = `${process.env.BASE_URL}/api/v1/users/verify/${token}`;
 
-    try {
-        await transporter.sendMail(mail)
-    } catch (error) {
-        console.error("Email failed", error);
-    }
-
-
-}
-
-const emailVerificationMailGenContent = (username, varificationUrl) => {
-    return {
-        body: {
-            name: username,
-            intro: 'Welcome to App! We\'re very excited to have you on board.',
-            action: {
-                instructions: 'To get started with Mailgen, please click here:',
-                button: {
-                    color: '#2258bcff', 
-                    text: 'Verify your email',
-                    link: varificationUrl
-                }
-            },
-            outro: 'Need help, or have questions? Just reply to this email, we\'d love to help.'
-        }
+    // email content
+    const mailOptions = {
+      from: `"Authentication App" <${process.env.SENDER_EMAIL}>`,
+      to: email,
+      subject: "Please verify your email address",
+      text: `
+        Thank you for registering! Please verify your email address to complete your registration.
+        ${verificationUrl}
+        This verification link will expire in 10 mins.
+        If you did not create an account, please ignore this email.
+      `,
     };
-}
 
+    // send email
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Verification email sent: %s ", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("Error sending verification email:", error);
+    return false;
+  }
+};
 
-const forgotPasswordMailGenContent = (username, passwordResetUrl) => {
-    return {
-        body: {
-            name: username,
-            intro: 'we got a request to reset your password',
-            action: {
-                instructions: 'To change your password click the button',
-                button: {
-                    color: '#2258bcff', 
-                    text: 'reset Password',
-                    link: passwordResetUrl
-                }
-            },
-            outro: 'Need help, or have questions? Just reply to this email, we\'d love to help.'
-        }
-    };
-}
-
-
-export { sendMail, emailVerificationMailGenContent, forgotPasswordMailGenContent }
+export default sendVerificationEmail

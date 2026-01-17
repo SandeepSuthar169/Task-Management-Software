@@ -8,6 +8,8 @@ import {
      AvailableBoardPriority, 
      AvailableBoardTages 
 } from "../utils/constants.js";
+import redis from "../utils/redis.js";
+
 
 const createBoard = asyncHandler(async(req, res) => {
     const { boardName, tags, prioripy, startDate, endDate} = req.body
@@ -50,11 +52,26 @@ const getBoard = asyncHandler(async(req, res) => {
     const { boardId } = req.params
     if(!boardId) throw new ApiError(402, "board Id is required")
   
+    const boardIdInCach = await redis.get(`board:${boardId}`)
 
     const board = await Board.findById(boardId)
 
+    if(boardIdInCach) {
+        return res.status(200).json(new ApiResponse(
+            200,
+            JSON.parse(boardIdInCach),
+            "board id cached successfully"
+        ))
+    }
     
     if(!board) throw new ApiError(402, "board is required")
+
+    await redis.set(
+        `book:${boardId}`,
+        JSON.stringify(board),
+        "EX",
+        3600
+    )
 
     return res.status(200).json(
         new ApiResponse(
@@ -74,8 +91,17 @@ const getAllBoard = asyncHandler(async(req, res) => {
     const user  = await User.findById(userId) 
     if(!user) throw new ApiError(404, "user is required")
 
+    const userIdInCach = await redis.get(`board:${userId}`)
+    
+    if(userIdInCach) {
+        return res.status(200).json(new ApiResponse(
+            200,
+            JSON.parse(userIdInCach),
+            "user id cached successfully"
+        ))
+    }
 
-    const boad = await Board.aggregate([
+    const board = await Board.aggregate([
         {
             $match: {
                 assignBy : new mongoose.Types.ObjectId(userId)
@@ -114,12 +140,20 @@ const getAllBoard = asyncHandler(async(req, res) => {
             }
         }
     ])
-    if(!boad || boad.length == 0 ) throw new ApiError(404, "boad is required")
+    if(!board || board.length == 0 ) throw new ApiError(404, "board is required")
+
+        
+    await redis.set(
+        `book:${userId}`,
+        JSON.stringify(board),
+        "EX",
+        3600
+    )   
 
     return res.status(200).json(
         new ApiResponse(200,
-            boad,
-            "task fetched successfully"
+            board,
+            "board fetched successfully"
         )
         )
 

@@ -1,80 +1,62 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken"
-import crypto from "crypto"
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 const userSchema = new Schema(
     {
-        avatar: {
-            type: {
-                url: String,
-                localpath: String
+            username: {
+                type: String,
+                required: true,
+                unique: true,
+                lowercase: true,
+                trim: true
             },
-            default: {
-                url: `https://placehold.co/600x400`,
-                localpath: ""
-            }
+            email: {
+                type: String,
+                required: true,
+                unique: true,
+                lowercase: true,
+                trim: true
+            },
+            password: {
+                type: String,
+                required: true
+            },
+            isEmailVerified: {
+                type: Boolean,
+                required: true,
+                default: false
+            },
+            refreshToken: {
+                type: String,
+            },
+            forgotPasswordToken: {
+                type: String,
+            },
+            forgotPasswordExpiry: {
+                type: Date,
+            },
+            emailVerificationToken: {
+                type: String,
+            },
+            emailVerificationExpiry: {
+                type: Date,
+            },
         },
-        username: {
-            type: String,
-            required: true,
-            unique: true,
-            lowercase: true,
-            trim: true,
-        
-        },
-        email: {
-            type: String,
-            required: true,
-            unique: true,
-            lowercase: true,
-            trim: true,
-
-        },
-        // fullname: {
-        //     type: String,
-        //     required: true,
-        // },
-        password: {
-            type: String,
-            required:[true, "password is required"]
-        },
-        isEmailVerified: {
-            type: Boolean,
-            default: false,
-        },
-        forgotPasswordToken: {
-            type: String,
-
-        },
-        forgotPasswordExpiry: {
-            type: Date
-        },
-        refreshToken: {
-            type: String
-        },
-        forgotPasswordExpriry: {
-            type: Date,
-        },
-        emailVerificationToken: {
-            type: String
-        },
-        emailVerificationExpiry: {
-            type: Date
-        },
-    }, 
-    { timestamps: true },
+    {
+        timestamps: true
+    }
 )
 
+userSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) return next();
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+  });
+  
 
-userSchema.pre("save", async function(next){
-    if(!this.isModified("password")) return next();
-    this.password = await bcrypt.hash(this.password, 10)
-    next()
-})
-
-
-userSchema.methods.isPasswordCorrect = async function(password){
+userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password, this.password)
 }
 
@@ -102,7 +84,6 @@ userSchema.methods.generateRefreshToken =  function () {
     )
 }
 
-
 userSchema.methods.generateTemporyToken = function(){
     const unHashedToken = crypto.randomBytes(20).toString("hex")
 
@@ -113,5 +94,4 @@ userSchema.methods.generateTemporyToken = function(){
     return { unHashedToken, hashedToken, tokenExpiry }
 
 }
-
 export const User = mongoose.model("User", userSchema)
