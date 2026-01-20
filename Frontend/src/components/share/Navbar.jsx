@@ -10,7 +10,7 @@ function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="w-full bg-neutral-900 text-white shadow-md">
+    <nav className="w-full bg-gray-900 text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           
@@ -24,6 +24,7 @@ function Navbar() {
             </button>
             <button className="hover:text-orange-400 transition flex items-center gap-2 text-right text-orange-400"><MdLogin className="text-orange-400" />Login</button>
             <button className="hover:bg-pink-500 transition flex items-center gap-2 text-right border text-white border-amber-600 bg-rose-500 py-2 px-3 rounded-xl"><BsPersonPlusFill className="text-white size-5"/>Sign Up</button>
+
           </div>
 
           <div className="md:hidden">
