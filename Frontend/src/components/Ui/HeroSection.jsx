@@ -3,7 +3,7 @@ import { IoCheckmarkCircleOutline } from "react-icons/io5";
 
 function HeroSection() {
   return (
-    <section className="w-full bg-gray-950 text-white py-16">
+    <section className="w-full bg-[oklch(95.4%_0.038_75.164)]  text-white py-16">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-2 gap-10 items-center">
           
