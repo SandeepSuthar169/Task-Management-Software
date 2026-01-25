@@ -3,6 +3,8 @@ import { PiSealCheckBold } from "react-icons/pi";
 import { FaEarthAmericas } from "react-icons/fa6";
 import { GrGroup } from "react-icons/gr";
 import { AiOutlineSafety } from "react-icons/ai";
+// -=-=-=-=-=-=
+import { IoMdCheckboxOutline } from "react-icons/io";
 
 const LineItems = [
     {
@@ -31,4 +33,54 @@ const LineItems = [
 
 ]
 
-export default LineItems
+
+
+const ChecksBoxItems = [
+    {
+        icon: IoMdCheckboxOutline,
+        text: "Project management",
+        color: "text-orange-600"
+    },
+    {
+        icon: IoMdCheckboxOutline,
+        text: "Task management",
+        color: "text-blue-600"
+
+    },
+    {
+        icon: IoMdCheckboxOutline,
+        text: "Client projects",
+        color: "text-puink-600"
+
+    },
+    {
+        icon: IoMdCheckboxOutline,
+        text: "Business operations",
+        color: "text-yellow-600"
+    },
+    {
+        icon: IoMdCheckboxOutline,
+        text: "Resource management",
+        color: "text-gray-600"
+    },
+    {
+        icon: IoMdCheckboxOutline,
+        text: "Portfolio management",
+        color: "text-red-600"
+    },
+    {
+        icon: IoMdCheckboxOutline,
+        text: "Goals & strategy",
+        color: "text-purple-600"
+    },
+    {
+        icon: IoMdCheckboxOutline,
+        text: "Create your own",
+        color: "text-lime-600"
+    },
+]
+
+export {
+    LineItems,
+    ChecksBoxItems
+}

@@ -1,10 +1,10 @@
 import React from 'react'
-import Cards from './Ui/Cards.jsx'
-import Footer from './Ui/Footer.jsx'
-import HeroSection from './Ui/HeroSection.jsx'
-import Navbar from './Ui/Navbar.jsx'
-import Line from './Ui/Line.jsx'
-
+// import Cards from './Pages/Cards.js'
+import Footer from './Pages/Footer.jsx'
+import HeroSection from './Pages/HeroSection.jsx'
+import Navbar from './Pages/Navbar.jsx'
+import Line from './Pages/Line.jsx'
+import SecoundHeroSection from './Pages/SecoundHeroSection.jsx'
 
 function Home() {
   return (
@@ -12,8 +12,8 @@ function Home() {
       <div>
         <Navbar/>
         <HeroSection/>
+        <SecoundHeroSection/>
         <Line/>
-        <Cards/>
         <Footer/>
       </div>
     </>
