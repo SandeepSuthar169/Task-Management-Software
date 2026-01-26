@@ -14,21 +14,22 @@ import {
 
 import {email, z} from 'zod';
 
-const loginSchema = z.object(
+const signupSchema = z.object(
   {
     email:z.string().email("Enter a valid email"),
     password:z.string().min(5, "passowd must b atleast of 5 characters"),
+    name:z.string().min(3, "Name must be atleast 3 characters")
   }
 )
 
 
-function Login() {
+function Signup() {
 
   const [showPassword, setShowPassword] = useState(false)
 
   const { register, handleSubmit, formState: {errors} } = useForm(
     {
-      resolver:zodResolver(loginSchema)
+      resolver:zodResolver(signupSchema)
     }
   )
 
@@ -53,7 +54,29 @@ function Login() {
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
+        
+        {/* name */}
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text font-medium">Name</span>
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Code className="h-5 w-5 text-base-content/40" />
+            </div>
+            <input
+              type="text"
+              {...register("name")}
+              className={`input input-bordered w-full pl-10 ${
+                errors.name ? "input-error" : ""
+              }`}
+              placeholder="John Doe"
+            />
+          </div>
+          {errors.name && (
+            <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+          )}              
+        </div>
 
         {/* Email */}
         <div className="form-control">
@@ -125,7 +148,7 @@ function Login() {
             </>
           ) : (
             )} */}
-            "Login"
+            "Sign in"
         </button>
       </form>
 
@@ -134,7 +157,7 @@ function Login() {
         <p className="text-base-content/60">
           Already have an account?{" "}
           <Link to="/login" className="link link-primary">
-            Login
+            Sign in
           </Link>
         </p>
       </div>
@@ -152,4 +175,4 @@ function Login() {
   )
 }
 
-export default Login
+export default Signup
