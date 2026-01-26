@@ -10,9 +10,10 @@ import {
   Lock,
   Mail,
 } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore.js"
 
 
-import {email, z} from 'zod';
+import {z} from 'zod';
 
 const loginSchema = z.object(
   {
@@ -25,6 +26,8 @@ const loginSchema = z.object(
 function Login() {
 
   const [showPassword, setShowPassword] = useState(false)
+  const {isLoggingIn , login} = useAuthStore()
+
  
 
   const { register, handleSubmit, formState: {errors} } = useForm(
@@ -122,16 +125,16 @@ function Login() {
         <button
           type="submit"
           className="btn btn-primary w-full"
-        //  disabled={isSigninUp}
+          disabled={isLoggingIn}
         >
-           {/* {isSigninUp ? (
+           {isLoggingIn ? (
             <>
               <Loader2 className="h-5 w-5 animate-spin" />
               Loading...
             </>
           ) : (
-            )} */}
             "Login"
+            )}
         </button>
       </form>
 

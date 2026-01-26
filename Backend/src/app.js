@@ -1,11 +1,20 @@
 import express from "express"
 import cookieparser from "cookie-parser"
 import cors from "cors"
+import authRoute from "./routes/auth.routes.js"
+import healthCheckRouter from "./routes/helthcheck.routes.js"
+import projectRoute from "./routes/project.routes.js"
+import noteRoute from "./routes/note.routes.js"
+import taskRoute from "./routes/task.routes.js"
+import subTaskRoute from "./routes/task.routes.js"
+import boardRoute from "./routes/board.routes.js"
+import todoRoute from "./routes/todo.routes.js"
+import projectDocsRoute from "./routes/projectDocs.routes.js"
 
 const app = express()
 
 app.use(cors({
-    origin: process.env.BASE_URL,
+    origin: " http://localhost:5173",
     credentials: true,
     methods: ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"],
     allowedHeaders: ['Content-Type', "Authorization"]
@@ -28,19 +37,6 @@ app.use(express.urlencoded(
 //         limit: "50kb"
 //     }
 // ))
-
-
-// router impots
-
-import authRoute from "./routes/auth.routes.js"
-import healthCheckRouter from "./routes/helthcheck.routes.js"
-import projectRoute from "./routes/project.routes.js"
-import noteRoute from "./routes/note.routes.js"
-import taskRoute from "./routes/task.routes.js"
-import subTaskRoute from "./routes/task.routes.js"
-import boardRoute from "./routes/board.routes.js"
-import todoRoute from "./routes/todo.routes.js"
-import projectDocsRoute from "./routes/projectDocs.routes.js"
 
 
 app.use("/api/v1/auth", authRoute)
