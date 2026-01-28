@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import {useState} from 'react'
 import { useForm } from "react-hook-form"
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
@@ -14,11 +14,14 @@ import { useAuthStore } from "../store/useAuthStore.js"
 
 
 import {z} from 'zod';
+import React from 'react';
 
 const loginSchema = z.object(
   {
     email:z.string().email("Enter a valid email"),
     password:z.string().min(5, "passowd must b atleast of 5 characters"),
+    username: z.string().min(3, "Username must be at least 3 characters") 
+
   }
 )
 
@@ -55,14 +58,36 @@ function Login() {
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
             <Code className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold mt-2">Welcome </h1>
-          <p className="text-base-content/60">Sign Up to your account</p>
+          <h1 className="text-2xl font-bold mt-2">Welcome back </h1>
+          <p className="text-base-content/60">Login Up to your account</p>
         </div>
       </div>
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
+      {/* name */}
+      <div className="form-control">
+          <label className="label">
+            <span className="label-text font-medium">Name</span>
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Code className="h-5 w-5 text-base-content/40" />
+            </div>
+            <input
+              type="text"
+              {...register("username")}
+              className={`input input-bordered w-full pl-10 ${
+                errors.username ? "input-error" : ""
+              }`}
+              placeholder="John Doe"
+            />
+          </div>
+          {errors.username && (
+            <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>
+          )}              
+        </div>
 
         {/* Email */}
         <div className="form-control">
