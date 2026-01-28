@@ -1,10 +1,10 @@
-import Todo from "../model/todo.model.js";
+import { Todo } from "../models/Todo.models.js";
 
 export const createTodo = async (req, res) => {
   const todo = new Todo({
     text: req.body.text,
     completed: req.body.completed,
-    user: req.user._id, // associate todo with loggedin user
+    user: req.user._id, 
   });
 
   try {

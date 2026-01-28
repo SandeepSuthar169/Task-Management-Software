@@ -7,7 +7,10 @@ import Login from "./Auth/Login.jsx"
 import Signup from './Auth/Signup.jsx'
 import { useAuthStore } from './store/useAuthStore.js'
 import Layout from './layout/Layout.jsx'
-import TodoApp from './store/useTodoStore.js'
+import TodoApp from './Pages/TodoPage.jsx'
+
+
+
 
 function App() {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore()
@@ -31,7 +34,9 @@ function App() {
         {/* Protected Routes - require auth */}
         <Route path='/' element={authUser ? <Layout /> : <Navigate to="/login" />}>
           <Route index element={<Home />} />
-           <Route path='todos' element={<TodoApp/>}/>
+          <Route path='todos' element={<TodoApp/>}/>
+
+           
         </Route>
         
         {/* Public Routes - only accessible if NOT authenticated */}

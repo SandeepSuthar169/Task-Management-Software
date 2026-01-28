@@ -1,137 +1,59 @@
-// App.jsx
-import { useEffect, useState } from "react";
-import { z } from "zod";
 import { create } from "zustand";
-import axios from "axios";
+import axiosInstance from "../lib/axios.js";
+import toast from "react-hot-toast";
 
-export const axiosInstance = axios.create({
-  baseURL:
-    import.meta.env.MODE === "development"
-      ? "http://localhost:3005/api/v1"
-      : "/api/v1",
-  withCredentials: true,
-});
-
-
-const todoSchema = z.object({
-  text: z.string().min(1, "Todo text is required"),
-  completed: z.boolean().optional(),
-});
-
-
-const useTodoStore = create((set) => ({
+export const useTodoStore = create((set) => ({
   todos: [],
   loading: false,
 
   getTodos: async () => {
     set({ loading: true });
-    const res = await axiosInstance.get("/todo");
-    set({ todos: res.data.todos, loading: false });
+    try {
+      const res = await axiosInstance.get("/todo/fetch"); 
+      set({ todos: res.data.todos, loading: false });
+    } catch (error) {
+      console.error("Error fetching todos:", error);
+      toast.error(error.response?.data?.message || "Failed to fetch todos");
+      set({ loading: false });
+    }
   },
 
-  createTodo: async (payload) => {
-    const res = await axiosInstance.post("/todo", payload);
-    set((state) => ({
-      todos: [...state.todos, res.data.newTodo],
-    }));
+  createTodo: async (data) => {
+    try {
+      const res = await axiosInstance.post("/todo/create", data); 
+      set((state) => ({
+        todos: [...state.todos, res.data.newTodo],
+      }));
+      toast.success("Todo created successfully");
+    } catch (error) {
+      console.error("Error creating todo:", error);
+      toast.error(error.response?.data?.message || "Failed to create todo");
+    }
   },
 
-  updateTodo: async (id, payload) => {
-    const res = await axiosInstance.put(`/todo/${id}`, payload);
-    set((state) => ({
-      todos: state.todos.map((t) => (t._id === id ? res.data.todo : t)),
-    }));
+  updateTodo: async (id, data) => {
+    try {
+      const res = await axiosInstance.put(`/todo/update/${id}`, data); 
+      set((state) => ({
+        todos: state.todos.map((t) => (t._id === id ? res.data.todo : t)),
+      }));
+      toast.success("Todo updated successfully");
+    } catch (error) {
+      console.error("Error updating todo:", error);
+      toast.error(error.response?.data?.message || "Failed to update todo");
+    }
   },
 
   deleteTodo: async (id) => {
-    await axiosInstance.delete(`/todo/${id}`);
-    set((state) => ({
-      todos: state.todos.filter((t) => t._id !== id),
-    }));
+    try {
+      await axiosInstance.delete(`/todo/delete/${id}`); 
+      set((state) => ({
+        todos: state.todos.filter((t) => t._id !== id),
+      }));
+      toast.success("Todo deleted successfully");
+    } catch (error) {
+      console.error("Error deleting todo:", error);
+      toast.error(error.response?.data?.message || "Failed to delete todo");
+    }
   },
 }));
-
-export default function TodoApp() {
-  const { todos, getTodos, createTodo, updateTodo, deleteTodo, loading } =
-    useTodoStore();
-
-  const [text, setText] = useState("");
-
-  useEffect(() => {
-    getTodos();
-  }, []);
-
-  const handleAdd = async () => {
-    const parsed = todoSchema.safeParse({ text });
-    if (!parsed.success) {
-      alert(parsed.error.issues[0].message);
-      return;
-    }
-    await createTodo({ text, completed: false });
-    setText("");
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white w-full max-w-md p-6 rounded-xl shadow">
-        <h1 className="text-2xl font-bold mb-4">Todo App</h1>
-
-        {/* ADD TODO */}
-        <div className="flex gap-2 mb-4">
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Enter todo"
-            className="flex-1 border rounded-lg p-2"
-          />
-          <button
-            onClick={handleAdd}
-            className="bg-blue-600 text-white px-4 rounded-lg"
-          >
-            Add
-          </button>
-        </div>
-
-        {/* LIST */}
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <ul className="space-y-2">
-            {todos.map((todo) => (
-              <li
-                key={todo._id}
-                className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
-              >
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={todo.completed}
-                    onChange={() =>
-                      updateTodo(todo._id, {
-                        completed: !todo.completed,
-                      })
-                    }
-                  />
-                  <span
-                    className={
-                      todo.completed ? "line-through text-gray-400" : ""
-                    }
-                  >
-                    {todo.text}
-                  </span>
-                </label>
-
-                <button
-                  onClick={() => deleteTodo(todo._id)}
-                  className="text-red-500"
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
-}

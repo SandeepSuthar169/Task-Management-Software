@@ -35,7 +35,7 @@ function SecoundHeroSection() {
                 </p>
               </div>
             );
-          })}
+          })}        
         </div>
 
       </div>

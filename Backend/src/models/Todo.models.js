@@ -8,40 +8,19 @@ import {
 
 const TodoSchema = new Schema(
     {
-        todoName: {
+        text: {
             type: String,
             require: true
         },
-        status: {
-            type: String,
-            enum: AvailableTodoStatuses,
-            default: TodoStatusEnum.TODO
-        },
-        piority: {
-            type: String,
-            enum: AvailableTodoPriority,
-            default: TodoPriority.HIGH
-        },
-        startDate: {
-            type: Date,
-            required: false
-        },
-        endDate: {
-            type: Date,
-            required: false
-        },
-
-        description: {
+        completed: {
             type: String,
             require: true
         },
-        estimatedHours: {
-            type: Number,
-        },
+        
     },
     {
         timestamps: true
     }
 )
 
-export const Todo = mongoose.model("Todo", TodoSchema)
+export  const Todo = mongoose.model("Todo", TodoSchema)
