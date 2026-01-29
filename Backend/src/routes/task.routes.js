@@ -10,17 +10,18 @@ import {
     deleteSubTask,
     deleteTask
 } from "../controllers/task.controllers.js";
-// import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 // import { upload } from "../middlewares/multer.middleware.js"
 
 const router = Router()
 
 // ================= Task ===================
-router.route("/createTask/:userId/:projectId").post(createTask)
+router.route("/createTask").post(verifyJWT, createTask)  // 1
+router.route("/getTasksById/:taskId").get(verifyJWT,getTasksById)  // 4
+router.route("/updateTask/:taskId").post(verifyJWT,updateTask)  // 2
+router.route("/deleteTask/:taskId").delete(verifyJWT, deleteTask)  // 3
+
 router.route("/getAllTask/:projectId").get(getAllTasks)
-router.route("/getTasksById/:taskId").get(getTasksById)
-router.route("/updateTask/:taskId").post(updateTask)
-router.route("/deleteTask/:taskId").delete(deleteTask)
 
 
 // ================= SubTask ===================

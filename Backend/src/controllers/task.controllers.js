@@ -11,28 +11,28 @@ import { AvailableTaskStatuses, AvailableUserRoles } from "../utils/constants.js
 
 const createTask = asyncHandler(async(req, res) =>{
     //1. find project
-    const { title, description, status, assignedTo } = req.body
+    const { title, description, status } = req.body
 
     // console.log(assignedTo );
     if(!title || !description || !status)  throw new ApiError(404, "user info not found!")
     
     
-    const { userId } =  req.params 
-    console.log(userId);
+    // const { userId } =  req.params 
+    // console.log(userId);
     
-    if(!userId) throw new ApiError(401, "user id is required")
+    // if(!userId) throw new ApiError(401, "user id is required")
 
-    const user = await User.findById(userId)
-    if(!user) throw new ApiError(401, "user  is required")
+    // const user = await User.findById(userId)
+    // if(!user) throw new ApiError(401, "user  is required")
 
 
-    const { projectId } = req.params
-    console.log(projectId);
+    // const { projectId } = req.params
+    // console.log(projectId);
     
-    if(!projectId) throw new ApiError(401, "projectId  is required")
+    // if(!projectId) throw new ApiError(401, "projectId  is required")
 
-    const  project  = await Project.findById(projectId)
-    if(!project)  throw new ApiError(404, "project not found!")
+    // const  project  = await Project.findById(projectId)
+    // if(!project)  throw new ApiError(404, "project not found!")
     //3. get the files form req.files
 
     // const files = req.files || []
@@ -54,9 +54,9 @@ const createTask = asyncHandler(async(req, res) =>{
     const task = await Task.create({
         title,
         description,
-        project: projectId,
-        assignedBy: user._id,
-        assignedTo: user._id,
+        // project: projectId,
+        assignedBy: req.user._id,
+        assignedTo: req.user._id,
         status,
         // attachments
     })
@@ -65,79 +65,6 @@ const createTask = asyncHandler(async(req, res) =>{
     //6. return successfully
 
     return res.status(201).json(new ApiResponse(201, task, "task create successfully"))
-})
-
-
-
-const getAllTasks = asyncHandler(async(req, res) =>{
-    const { projectId } = req.params
-    const project = await Project.findById(projectId)
-    
-    const projectTaskIdInCach = await redis.get(`rask:${projectId}`)
-    
-    if(projectTaskIdInCach) {
-        return res.status(200).json(new ApiResponse(
-            200,
-            JSON.parse(projectTaskIdInCach),
-            "project task id cached successfully"
-        ))
-    }
-    if(!project)  throw new ApiError(401, "project not found")
-
-    const task = await Task.aggregate([
-      {
-        $match: {
-            project: new mongoose.Types.ObjectId(projectId)
-        } 
-    },
-    {
-        $lookup: {
-            from: "users",
-            localField: "assignedTo",
-            foreignField: "_id",
-            as: "assignedTo"
-        }
-    },
-    {
-        $unwind: {
-            path: "$assignedTo",
-            preserveNullAndEmptyArrays: true
-        }
-    },
-    {
-        $project: {
-            title: 1,
-            description: 1,
-            project: 1,
-            assignedBy: 1,
-            status: 1,
-            attachments: 1,
-            assignedTo: {
-                _id: 1,
-                avatar: 1,
-                username: 1,
-                fullName: 1
-            }
-        }
-    }
-    ])
-
-    if(!task || task.length === 0) throw new ApiError(404, "Tasks not found")
-      
-
-    await redis.set(
-      `book:${projectId}`,
-      JSON.stringify(task),
-      "EX",
-      3600
-    )
-
-    return res.status(200).json(
-        new ApiResponse(200,
-            task,
-            "task fetched successfully"
-        )
-    )
 })
 
 
@@ -241,6 +168,7 @@ const getTasksById = asyncHandler(async(req, res) =>{
 })
 
 
+
 const updateTask = asyncHandler(async(req, res) =>{
     const { title, description, status, assignedTo} = req.body
 
@@ -325,6 +253,80 @@ const deleteTask = asyncHandler(async(req, res) =>{
       "delete task successfully"
     ))
 })
+
+
+const getAllTasks = asyncHandler(async(req, res) =>{
+    const { projectId } = req.params
+    const project = await Project.findById(projectId)
+    
+    const projectTaskIdInCach = await redis.get(`rask:${projectId}`)
+    
+    if(projectTaskIdInCach) {
+        return res.status(200).json(new ApiResponse(
+            200,
+            JSON.parse(projectTaskIdInCach),
+            "project task id cached successfully"
+        ))
+    }
+    if(!project)  throw new ApiError(401, "project not found")
+
+    const task = await Task.aggregate([
+      {
+        $match: {
+            project: new mongoose.Types.ObjectId(projectId)
+        } 
+    },
+    {
+        $lookup: {
+            from: "users",
+            localField: "assignedTo",
+            foreignField: "_id",
+            as: "assignedTo"
+        }
+    },
+    {
+        $unwind: {
+            path: "$assignedTo",
+            preserveNullAndEmptyArrays: true
+        }
+    },
+    {
+        $project: {
+            title: 1,
+            description: 1,
+            project: 1,
+            assignedBy: 1,
+            status: 1,
+            attachments: 1,
+            assignedTo: {
+                _id: 1,
+                avatar: 1,
+                username: 1,
+                fullName: 1
+            }
+        }
+    }
+    ])
+
+    if(!task || task.length === 0) throw new ApiError(404, "Tasks not found")
+      
+
+    await redis.set(
+      `book:${projectId}`,
+      JSON.stringify(task),
+      "EX",
+      3600
+    )
+
+    return res.status(200).json(
+        new ApiResponse(200,
+            task,
+            "task fetched successfully"
+        )
+    )
+})
+
+
 
 
 const createSubTask = asyncHandler(async(req, res) =>{
