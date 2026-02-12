@@ -32,7 +32,7 @@ function Navbar() {
                 <img
                   src={
                     authUser?.image ||
-                    "images\png-transparent-computer-icons-user-profile-avatar-heroes-head-recruiter.png"
+                    "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn3.iconfinder.com%2Fdata%2Ficons%2Fweb-design-and-development-2-6%2F512%2F87-1024.png&f=1&nofb=1&ipt=bc599ab4939712f61b120f5b3cb971f159b76e06fdab8ca67ed0640c21c7158c"
                   }
                   alt="User Avatar"
                   className="object-cover"

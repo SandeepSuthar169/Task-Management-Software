@@ -3,8 +3,8 @@ import React from 'react'
 import Footer from './Footer.jsx'
 import HeroSection from './HeroSection.jsx'
 import Navbar from './Navbar.jsx'
-import Line from './Line.jsx'
-import SecoundHeroSection from './SecoundHeroSection.jsx'
+// import Line from './Line.jsx'
+// import SecoundHeroSection from './SecoundHeroSection.jsx'
 
 function Home() {
   return (
@@ -12,8 +12,6 @@ function Home() {
       <div>
         <Navbar/>
         <HeroSection/>
-        <SecoundHeroSection/>
-        <Line/>
         <Footer/>
       </div>
     </>

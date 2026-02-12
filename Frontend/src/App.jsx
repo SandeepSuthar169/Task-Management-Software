@@ -9,6 +9,7 @@ import { useAuthStore } from './store/useAuthStore.js'
 import Layout from './layout/Layout.jsx'
 import TodoApp from './Pages/TodoPage.jsx'
 import TasksPage from './Pages/TaskPage.jsx'
+import TaskLayout from './layout/TaskLayout.jsx'
 
 
 
@@ -32,14 +33,13 @@ function App() {
     <>
       <Toaster />
       <Routes>
-        {/* Protected Routes - require auth */}
-        <Route path='/' element={authUser ? <Layout /> : <Navigate to="/login" />}>
+        <Route path='/' element={<Layout />}>
           <Route index element={<Home />} />
-
-           
         </Route>
-        
-        {/* Public Routes - only accessible if NOT authenticated */}
+        <Route path='/task' element={<TaskLayout/>}>
+              <Route path='/todos' element={<TodoApp/>}/>
+        </Route>
+
         <Route 
           path='login' 
           element={!authUser ? <Login /> : <Navigate to='/' />} 
@@ -48,7 +48,6 @@ function App() {
           path='signup' 
           element={!authUser ? <Signup /> : <Navigate to='/' />} 
         />
-        <Route path='todos' element={<TodoApp/>}/>
         <Route path='tasks' element={<TasksPage/>}/>
 
        
