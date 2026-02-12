@@ -4,12 +4,10 @@ import { FaBars, FaTimes } from "react-icons/fa";
 import { FiHome } from "react-icons/fi";
 import { MdLogin } from "react-icons/md";
 import { BsPersonPlusFill } from "react-icons/bs";
-
-
-import { User, Code, LogOut } from "lucide-react";
+import { NavLink } from "react-router-dom";
+import { User, Code, LogOut, LogIn } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore.js"
 import { Link } from 'lucide-react';
-import LogoutButton from "../constants/LogoutButton.jsx"
 
 function Navbar() {
 
@@ -18,9 +16,8 @@ function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full py-5">
       <div className="flex w-full justify-between mx-auto max-w-4xl bg-black/15 shadow-lg shadow-neutral-600/5 backdrop-blur-lg border border-gray-200/10 p-4 rounded-2xl">
-        {/* Logo Section */}
         <Link to="/" className="flex items-center gap-3 cursor-pointer">
-          <FaDiagramProject className="text-3xl gap-3 text-orange-700" />
+          {/* <FaDiagramProject className="text-3xl gap-3 text-orange-700" /> */}
           <span className="text-lg md:text-2xl font-bold tracking-tight text-white hidden md:block">FlowBoard</span>
         </Link>
 
@@ -42,45 +39,14 @@ function Navbar() {
             </label>
             <ul
               tabIndex={0}
-              className="menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-base-100 rounded-box w-52 space-y-3"
-            >
-              {/* Admin Option */}
-             
-
-              {/* Common Options */}
+              className="menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-base-100 rounded-box w-52 space-y-3">
               <li>
-                <p className="text-base font-semibold">
-                 
-                  {authUser?.name}
-
-                </p>
-                <hr className="border-gray-200/10" />
-              </li>
-              <li>
-                <Link
-                  to="/profile"
-                  className="hover:bg-primary hover:text-white text-base font-semibold"
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  My Profile
-                </Link>
-              </li>
-              {authUser?.role === "ADMIN" && (
-                <li>
-                  <Link
-                    to="/add-project"
-                    className="hover:bg-primary hover:text-white text-base font-semibold"
-                  >
-                    <Code className="w-4 h-4 mr-1" />
-                    Add Project
-                  </Link>
-                </li>
-              )}
-              <li>
-                <LogoutButton className="hover:bg-primary hover:text-white">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </LogoutButton>
+                  <NavLink to="/login" className={"flex items-center"}>
+                    <div className="btn btn-primary hover:bg-primary hover:text-white">
+                        <LogIn className="w-5 h-4 mr-2" />
+                      LogIn
+                    </div>
+                  </NavLink>
               </li>
             </ul>
           </div>

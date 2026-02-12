@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
 import { z } from "zod";
-import { useTodoStore } from "../store/useTodoStore.jsx";
+import { useTodoStore } from "../../store/useTodoStore.jsx";
 
 // Simple validation schema
 const todoSchema = z.string().min(1, "Todo cannot be empty").max(200, "Too long");

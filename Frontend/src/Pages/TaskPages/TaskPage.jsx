@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useTaskStore } from "../store/useTaskStore.js"
+import { useTaskStore } from "../../store/useTaskStore.js"
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
