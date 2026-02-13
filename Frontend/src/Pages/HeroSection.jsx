@@ -37,7 +37,7 @@ function HeroSection() {
             </div>
 
             <div  className="bg-pink-500 hover:bg-pink-600 transition px-6 py-3 rounded-md font-semibold w-fit shadow-lg">
-            <NavLink to="/todos">
+            <NavLink to="/task/todos">
               Get Start
             </NavLink>
             </div>

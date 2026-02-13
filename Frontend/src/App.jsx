@@ -7,9 +7,10 @@ import Login from "./Auth/Login.jsx"
 import Signup from './Auth/Signup.jsx'
 import { useAuthStore } from './store/useAuthStore.js'
 import Layout from './layout/Layout.jsx'
-import TodoApp from './Pages/TaskPages/TaskPage.jsx'
-import TasksPage from './Pages/TaskPages/TaskPage.jsx'
+import TodoApp from './Pages/TaskPage/TodoPage.jsx'
+import TasksPage from './Pages/TaskPage/TaskPage.jsx'
 import TaskLayout from './layout/TaskLayout.jsx'
+import KanBan from './Pages/TaskPage/KanBan.jsx'
 
 
 
@@ -36,10 +37,13 @@ function App() {
         <Route path='/' element={<Layout />}>
           <Route index element={<Home />} />
         </Route>
-        {/* <Route path='/task' element={<TaskLayout/>}/> */}
-        {/* </Route> */}
+        <Route path='/task' element={<TaskLayout/>}>
 
-              <Route path='todos' element={<TodoApp/>}/>
+              <Route path='/task/todos' element={<TodoApp/>}/>
+              <Route path='/task/tasks' element={<TasksPage/>}/>
+              <Route path='/task/kan-ban' element={<KanBan/>}/>
+
+        </Route>
         <Route 
           path='login' 
           element={!authUser ? <Login /> : <Navigate to='/' />} 
@@ -48,7 +52,6 @@ function App() {
           path='signup' 
           element={!authUser ? <Signup /> : <Navigate to='/' />} 
         />
-        <Route path='tasks' element={<TasksPage/>}/>
 
        
       </Routes>
