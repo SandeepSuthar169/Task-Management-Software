@@ -1,69 +1,84 @@
 // controllers/todo.controller.js
-import Todo from "../models/Todo.models.js";
+import { Todo } from "../models/Todo.models.js";
 
 export const createTodo = async (req, res) => {
   try {
-    const { text, completed, status, projectId } = req.body;
+    const { title, completed, subtasks } = req.body;
 
     if (!text) {
       return res.status(400).json({ message: "Todo text is required" });
     }
 
-    const newTodo = new Todo({
-      text,
+    const todo = await Todo.create({
+      title,
+      subtasks: subtasks || [],
       completed: completed || false,
-      status: status || "TO DO",
-      projectId: projectId || "project1",
-      userId: req.user._id, 
+      userId: req.user?._id, 
     });
 
-    await newTodo.save();
 
     res.status(201).json({
       message: "Todo created successfully",
-      newTodo,
+      todo,
     });
   } catch (error) {
     console.error("Error in createTodo:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json(
+      { 
+        message: "Internal server error" 
+      }
+    );
   }
 };
 
-export const getTodos = async (req, res) => {
+export const getAllTodos = async (req, res) => {
   try {
-    const todos = await Todo.find({ userId: req.user._id }).sort({
-      createdAt: -1,
-    });
+    const { userId } = req.user?._id
+    const todos = await Todo
+      .find({ userId })
+      .sort({ createAt: -1})
 
-    res.status(200).json({ todos });
+    res.status(200).json({
+      success: true,
+      data: todos
+    })
+  
   } catch (error) {
     console.error("Error in getTodos:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ 
+      success: false,
+      message: "Internal server error", 
+    });
   }
 };
 
 export const updateTodo = async (req, res) => {
   try {
     const { id } = req.params;
-    const { text, completed, status, projectId } = req.body;
 
-    const todo = await Todo.findOne({ _id: id, userId: req.user._id });
+    const updateTodo = await Todo.findByIdAndUpdate( 
+      id,
+      req.body,
+      {
+        new: true,
+        runValidators: true
+      } 
+    )
 
-    if (!todo) {
+    if (!updateTodo) {
       return res.status(404).json({ message: "Todo not found" });
     }
 
-    if (text !== undefined) todo.text = text;
-    if (completed !== undefined) todo.completed = completed;
-    if (status !== undefined) todo.status = status;
-    if (projectId !== undefined) todo.projectId = projectId;
+    if (title !== undefined) updateTodo.title = title;
+    if (completed !== undefined) updateTodo.completed = completed;
 
-    await todo.save();
+    await updateTodo.save();
 
     res.status(200).json({
       message: "Todo updated successfully",
-      todo,
+      updateTodo,
     });
+
   } catch (error) {
     console.error("Error in updateTodo:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -74,18 +89,20 @@ export const deleteTodo = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const todo = await Todo.findOneAndDelete({
+    const deleteTodo = await Todo.findOneAndDelete({
       _id: id,
       userId: req.user._id,
     });
 
-    if (!todo) {
+    if (!deleteTodo) {
       return res.status(404).json({ message: "Todo not found" });
     }
 
     res.status(200).json({ message: "Todo deleted successfully" });
+
   } catch (error) {
     console.error("Error in deleteTodo:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+

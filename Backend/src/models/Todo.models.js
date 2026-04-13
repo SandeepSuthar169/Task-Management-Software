@@ -1,33 +1,30 @@
-import mongoose from "mongoose";
+import mongoose from "mongoose"
 
-const todoSchema = new mongoose.Schema(
-  {
-    text: {
-      type: String,
-      required: true,
-    },
-    completed: {
-      type: Boolean,
-      default: false,
-    },
-    status: {
-      type: String,
-      enum: ["TO DO", "IN PROGRESS", "DONE"],
-      default: "TO DO",
-    },
-    projectId: {
-      type: String,
-      default: "project1",
-    },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+const subTodoSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true
   },
-  { timestamps: true }
-);
+  completed: {
+    type: Boolean,
+    default: false
+  },
+  subtasks: [] 
+}, { _id: true });
 
-const Todo = mongoose.model("Todo", todoSchema);
+const todoSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+  },
+  completed: {
+    type: Boolean,
+    default: false
+  },
+  subtasks: [subTodoSchema] 
+}, {
+  timestamps: true
+});
 
-export default Todo;
+export const Todo = mongoose.model("Todo", todoSchema);

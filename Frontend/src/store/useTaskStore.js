@@ -6,13 +6,12 @@ export const useTaskStore = create((set) => ({
     tasks: [],
     loading: false,
 
-    getTasks: async (taskId) => {
+    getTasks: async () => {
         set({ loading: true });
         try {
-          const res = await axiosInstance.get(`/task/getTasksById/${taskId}`); 
+          const res = await axiosInstance.get(`/task/getAllTasks`); 
           set({ tasks: res.data.data, loading: false }); 
         } catch (error) {
-     
           toast.error(error.response?.data?.message || "Failed to fetch tasks");
           set({ loading: false });
         }
@@ -29,7 +28,6 @@ export const useTaskStore = create((set) => ({
             toast.success("Task created successfully");
             return res.data.data; 
         } catch (error) {
-          
             toast.error(error.response?.data?.message || "Failed to create tasks");
             set({ loading: false }); 
             throw error; 
@@ -40,7 +38,7 @@ export const useTaskStore = create((set) => ({
     updateTasks: async (taskId, data) => {
         set({ loading: true }); 
         try {
-            const res = await axiosInstance.post(`/task/updateTask/${taskId}`, data); 
+            const res = await axiosInstance.patch(`/task/updateTask/${taskId}`, data); // ✅ Fixed: POST → PATCH
             set((state) => ({
                 tasks: state.tasks.map((t) => (t._id === taskId ? res.data.data : t)),
                 loading: false, 
@@ -48,7 +46,6 @@ export const useTaskStore = create((set) => ({
             toast.success("Task updated successfully");
             return res.data.data;
         } catch (error) {
-          
             toast.error(error.response?.data?.message || "Failed to update task");
             set({ loading: false }); 
             throw error;

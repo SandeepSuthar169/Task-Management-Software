@@ -1,24 +1,19 @@
 import cookieparser from "cookie-parser"
 import cors from "cors"
-import authRoute from "./routes/auth.routes.js"
-import healthCheckRouter from "./routes/helthcheck.routes.js"
-import projectRoute from "./routes/project.routes.js"
-import noteRoute from "./routes/note.routes.js"
-import taskRoute from "./routes/task.routes.js"
-import subTaskRoute from "./routes/task.routes.js"
-import boardRoute from "./routes/board.routes.js"
-import todoRoute from "./routes/todo.routes.js"
-import projectDocsRoute from "./routes/projectDocs.routes.js"
+
+import authRoutes from "./routes/auth.routes.js"
+import healthCheckRouters from "./routes/helthcheck.routes.js"
+import todoRoutes from "./routes/todo.routes.js"
 
 import express from "express"
 const app = express()
 
 app.use(cors({
-    origin: " http://localhost:5173",
+    origin: "http://localhost:5173",
     credentials: true,
     methods: ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"],
     allowedHeaders: ['Content-Type', "Authorization"]
-})) // ← Removed comma here
+})) 
 
 app.use(express.json())
 app.use(cookieparser())
@@ -28,26 +23,10 @@ app.use(express.urlencoded(
     }
 ))
 
-// app.use(express.json({limit: "50kb"}))
-// app.use(cookieParser())
-// app.use(express.static("public"))
-// app.use(express.urlencoded(
-//     {
-//         extended: true,
-//         limit: "50kb"
-//     }
-// ))
 
-
-app.use("/api/v1/auth", authRoute)
-app.use("/api/v1/healthcheck", healthCheckRouter)
-app.use("/api/v1/project", projectRoute)
-app.use("/api/v1/note", noteRoute)
-app.use("/api/v1/task", taskRoute)
-app.use("/api/v1/subTask", subTaskRoute)
-app.use("/api/v1/board", boardRoute)
-app.use("/api/v1/todo", todoRoute)
-app.use("/api/v1/projectDocs", projectDocsRoute)
+app.use("/api/v1/auth", authRoutes)
+app.use("/api/v1/healthcheck", healthCheckRouters)
+app.use("/api/v1/todo", todoRoutes)
 
 
 export default app;

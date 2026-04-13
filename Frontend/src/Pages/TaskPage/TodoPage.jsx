@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
 import { z } from "zod";
-import { useTodoStore } from "../../store/useTodoStore.jsx";
+import { useTodoStore } from "../../store/useTodoStore.js";
 
 // Simple validation schema
 const todoSchema = z.string().min(1, "Todo cannot be empty").max(200, "Too long");
@@ -88,7 +88,7 @@ export default function SimpleTodoApp() {
         {activeTodos.length > 0 && (
           <div className="mb-6">
             <h2 className="text-sm font-semibold text-gray-400 uppercase mb-3">
-              Active Tasks
+              Active Todos
             </h2>
             <div className="space-y-2">
               {activeTodos.map((todo) => (
@@ -107,7 +107,7 @@ export default function SimpleTodoApp() {
         {completedTodos.length > 0 && (
           <div>
             <h2 className="text-sm font-semibold text-gray-400 uppercase mb-3">
-              Completed
+              Completed Todos
             </h2>
             <div className="space-y-2">
               {completedTodos.map((todo) => (
