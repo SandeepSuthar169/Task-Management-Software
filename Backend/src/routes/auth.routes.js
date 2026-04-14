@@ -10,9 +10,9 @@ import { verifyJWT } from "../middlewares/auth.middleware.js"
 const router = Router()
 
 
-router.post("/register", registerUser)
-router.post("/login" , loginUser)
-router.post("/logout",verifyJWT,  logoutUser)
-router.get("/check", check)
+router.post("/register" , registerUser            )
+router.post("/login"    , loginUser               )
+router.post("/logout"   , verifyJWT   , logoutUser)
+router.get ("/check"    , check                   )
 
 export default router
