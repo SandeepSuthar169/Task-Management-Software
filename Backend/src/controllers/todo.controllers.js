@@ -183,12 +183,6 @@ export const createSubtask = async (req, res) => {
 
 
 // ==================================================================
-
-
-
-
-
-// ==================================================================
 const updateNested = (subtasks, subtaskId, data) => {
 
   for(let task of subtasks){
@@ -255,6 +249,10 @@ const deleteNestedSubtask = (subtasks, subtaskId) => {
       return task
     })
 }
+
+
+// ==================================================================
+
 
 export const deleteSubtask = async (req, res) => {
   const { todoId, subtaskId } = req.params;
