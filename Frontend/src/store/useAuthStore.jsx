@@ -15,6 +15,11 @@ export default useAuthStore = create((set) => ({
     try {
       const res = await axiosInstance.get("/auth/check")
 
+      console.log(res);
+      console.log(res.data);
+      console.log(res.data.data);
+      
+
       if(res.data.user || res.data.success) {
         set({authUser: res.data.data})
       } else {
@@ -37,6 +42,11 @@ export default useAuthStore = create((set) => ({
       
       const res = await axiosInstance.post("/auth/register", data)
 
+      
+      console.log(res);
+      console.log(res.data);
+      console.log(res.data.data);
+
       set({ authUser: res.data.data })
       toast.success(res.data.message)
 
@@ -53,6 +63,11 @@ export default useAuthStore = create((set) => ({
 
     try {
       const res = await axiosInstance.post("/auth/login", data)
+
+      
+      console.log(res);
+      console.log(res.data);
+      console.log(res.data.data);
 
       set({ authUser: res.data.data })
       toast.success(res.data.message)

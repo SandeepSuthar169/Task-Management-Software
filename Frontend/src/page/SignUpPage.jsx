@@ -12,7 +12,7 @@ import {
   Mail,
 } from "lucide-react";
 import AuthImagePattern from '../components/AuthImagePattern.jsx'
-import { useAuthStore } from '../store/useAuthStrore.js'
+import  useAuthStore  from '../store/useAuthStore.jsx'
 // import { useNavigate } from "react-router-dom"
 
 const SignUpSchema = z.object({
@@ -24,7 +24,7 @@ const SignUpPage = () => {
 
   const [ showPassword, setShowPassword ] = useState(false)
 
-  const { signup, isSignUp } = useAuthStore()
+  // const { signup, isSignUp } = useAuthStore()
 
   // const navigate = useNavigate()
 
@@ -36,17 +36,17 @@ const SignUpPage = () => {
     resolver: zodResolver(SignUpSchema)
   })
 
-  const onSubmit = async (data) => {
-    try {
-      await signup(data)
-      // navigate("/login")
-      console.log("signup data", data);
-      
-    } catch (error) {
-      console.error("Signup Failed. ", error);
-      
-    }
-  }
+  // const onSubmit = async (data) => {
+  //   try {
+  //     await signup(data)
+  //     // navigate("/login")
+  //     console.log("signup data", data);
+  //     
+  //   } catch (error) {
+  //     console.error("Signup Failed. ", error);
+  //     
+  //   }
+  // }
 
 
   return (
@@ -65,7 +65,9 @@ const SignUpPage = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form 
+          // onSubmit={handleSubmit(onSubmit)} 
+          className="space-y-6">
             
             {/* name */}
             <div className="form-control">
@@ -151,16 +153,16 @@ const SignUpPage = () => {
             <button
               type="submit"
               className="btn btn-primary w-full"
-              disabled={isSignUp}
+              // disabled={isSignUp}
             >
-              {isSignUp ? (
+              {/* {isSignUp ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
                   Loading...
                 </>
               ) : (
                 "Sign In"
-              )}
+              )} */}
             </button>
           </form>
 

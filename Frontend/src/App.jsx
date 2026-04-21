@@ -1,8 +1,20 @@
 import React from 'react'
+import { Routes, Route } from "react-router-dom"
+import { Toaster } from "react-hot-toast"
+import HomePage from './page/HomePage'
+import SignUpPage from "./page/SignUpPage"
+import LoginPage from "./page/LoginPage"
 
 const App = () => {
   return (
-    <div>App</div>
+    <div className="flex items-center justify-center h-screen">
+      <Toaster />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
+      </Routes>
+    </div>
   )
 }
 

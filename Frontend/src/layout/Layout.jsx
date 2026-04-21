@@ -1,8 +1,12 @@
-import React from 'react'
+// components/Layout.jsx
+import { Outlet } from "react-router-dom"
 
 const Layout = () => {
   return (
-    <div>Layout</div>
+    <div>
+      <nav>Your Navbar Here</nav>
+      <Outlet /> {/* child routes render here */}
+    </div>
   )
 }
 
